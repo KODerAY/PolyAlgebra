@@ -1,0 +1,51 @@
+namespace PolyAlgebraSolution
+open System.Numerics
+open MathNet.Numerics
+open MathNet.Symbolics
+
+open Operators
+
+module operations =
+    open System
+    //x:number, y:base
+    let log2 x y = Math.Log x / Math.Log y
+    let sigma k n (f: double -> double) = 
+        let mutable sum:double = 0.0
+        for i = k to n do
+            sum <- sum + f (double i)
+        sum
+    //sigma k=0 n a^k = 
+    let sigmaAk n a : int = 
+        if a = 1 then
+            n + 1
+        else
+            let asd = pown a (n+1)
+            let numerator = asd - 1
+            let denominator = a - 1
+            numerator / denominator
+
+module main =
+    open operations
+    let symbolsCreate length =
+        let alphabet = [|'a' .. 'z'|]
+        let mutable symbol:string = ""
+        let symbols:string[] = Array.create length ""
+        for i in 0 .. length - 1 do
+            let sizeOfStringSymbol = int(log2 (float i + 0.1) (float alphabet.Length))//reason of 0.1->log0 undefined
+            for j in sizeOfStringSymbol .. -1 .. 0 do
+                let alpBase = alphabet.Length
+                let floorNumber = sigmaAk j alpBase - 1
+                let priod = pown alpBase j
+                let index = ((i - floorNumber) / priod) % alpBase
+                symbol <- symbol + alphabet.[index].ToString()
+            symbols.[i] <- symbol
+            symbol <- ""
+        symbols |> String.concat ","
+        
+    let x2 = 0
+    //System.Console.WriteLine(Infix.format(Algebraic.expand((x + y) * (x + y))))
+    0
+
+    let asd x = x * x
+    0
+
