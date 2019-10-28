@@ -31,9 +31,17 @@ module main =
         let mutable symbol:string = ""
         let symbols:string[] = Array.create length ""
         for i in 0 .. length - 1 do
-            let sizeOfStringSymbol = int(log2 (float i + 0.1) (float alphabet.Length))//reason of 0.1->log0 undefined
+            let x = float i
+            let alpBase = alphabet.Length
+            //f x = j : 1 -> x sigma a^j = a^(x+1) - 1 / a - 1 - 1 inverse YO!(NIHONGO :D)
+            //x = a^(y+1) - 1 / a - 1 - 1
+            //(x + 1) * (a - 1) + 1 = a^(y+1)
+            //loga((x + 1) * (a - 1) + 1) - 1 = y = f-1 x
+            //(if(x = 0.0) then 1.0 else 0.0) lazım olursa diye
+            let sizeOfStringSymbol = int(log2 ((x + 1.0) * (float alpBase - 1.0) + 1.0) (float alpBase)) - 1
+            //System.Console.WriteLine (i.ToString() + "-" + sizeOfStringSymbol.ToString())
+            //int(log2 (float i + 0.1) (float alphabet.Length))//reason of 0.1->log0 undefined
             for j in sizeOfStringSymbol .. -1 .. 0 do
-                let alpBase = alphabet.Length
                 let floorNumber = sigmaAk j alpBase - 1
                 let priod = pown alpBase j
                 let index = ((i - floorNumber) / priod) % alpBase
@@ -41,10 +49,20 @@ module main =
             symbols.[i] <- symbol
             symbol <- ""
         symbols |> String.concat ","
+
+    let symbolIsSame (stringArray:string) = 
+        let mutable result = false
+        let strings = stringArray.Split [|','|]
+        for i = 0 to strings.Length - 1 do
+            for j = i + 1 to strings.Length - 1 do
+                System.Console.WriteLine (i.ToString() + j.ToString())
+                if strings.[i] = strings.[j] then 
+                    result <- true
+        result
         
     let x2 = 0
     //System.Console.WriteLine(Infix.format(Algebraic.expand((x + y) * (x + y))))
-    0
+    
 
     let asd x = x * x
     0
