@@ -8,6 +8,8 @@ open Operators
 module operations =
     open System
     //x:number, y:base
+    //let log2 x y = Math.Log y / Math.Log x
+    //let asd = log2 2.0 8.0
     let log2 x y = Math.Log x / Math.Log y
     let sigma k n (f: double -> double) = 
         let mutable sum:double = 0.0
@@ -26,21 +28,21 @@ module operations =
 
 module main =
     open operations
-    let symbolsCreate length =
+    let symbolsCreate (length:int) : string[] =
         let alphabet = [|'a' .. 'z'|]
         let mutable symbol:string = ""
         let symbols:string[] = Array.create length ""
         for i in 0 .. length - 1 do
             let x = float i
             let alpBase = alphabet.Length
-            //f x = j : 1 -> x sigma a^j = a^(x+1) - 1 / a - 1 - 1 inverse YO!(NIHONGO :D)
-            //x = a^(y+1) - 1 / a - 1 - 1
+            //x: index, a: alpBase, f x: return the length of symbols that could be written
+            //f x = j : 1 -> x sigma a^j = (a^(x+1) - 1) / (a - 1) - 1 inverse YO!(NIHONGO :D)
+            //x = (a^(y+1) - 1) / (a - 1) - 1
             //(x + 1) * (a - 1) + 1 = a^(y+1)
             //loga((x + 1) * (a - 1) + 1) - 1 = y = f-1 x
-            //(if(x = 0.0) then 1.0 else 0.0) lazım olursa diye
             let sizeOfStringSymbol = int(log2 ((x + 1.0) * (float alpBase - 1.0) + 1.0) (float alpBase)) - 1
+            //(if(x = 0.0) then 1.0 else 0.0) lazım olursa diye
             //System.Console.WriteLine (i.ToString() + "-" + sizeOfStringSymbol.ToString())
-            //int(log2 (float i + 0.1) (float alphabet.Length))//reason of 0.1->log0 undefined
             for j in sizeOfStringSymbol .. -1 .. 0 do
                 let floorNumber = sigmaAk j alpBase - 1
                 let priod = pown alpBase j
@@ -48,9 +50,55 @@ module main =
                 symbol <- symbol + alphabet.[index].ToString()
             symbols.[i] <- symbol
             symbol <- ""
-        symbols |> String.concat ","
+        symbols
 
-    let symbolIsSame (stringArray:string) = 
+    let symbolsCreateWithBans (length : int, bans : string[]) : string[] =
+        let mutable symbols = symbolsCreate(length + bans.Length)
+        let rec symbolsLoop i j =
+            if i < symbols.Length then
+                if bans.[j] = symbols.[i] then
+                    j
+                else
+                    symbolsLoop (i + 1) j
+            else
+                (-1)
+        let rec banLoop i =
+            if i < bans.Length then
+                let result = symbolsLoop 0 i
+                if result = -1 then
+                    printfn "Banlı karakter bulunamadı!"
+                    printfn "Banned character not found!"
+                    (-1)
+                else
+                    symbols <- Array.choose (fun x -> if (x = bans.[result]) then None else Some(x)) (symbols)
+                    printfn"%A" symbols
+                    banLoop (i + 1)
+            else
+                (0)
+        let result = banLoop 0
+        symbols
+
+
+    let symbolsExCreate (length : int) : Expression[] =
+        let symbols = symbolsCreate length
+        let symbolsEx = Array.create symbols.Length Expression.Zero
+        for i = 0 to (symbols.Length - 1) do
+            symbolsEx.[i] <- symbol symbols.[i]
+        symbolsEx
+
+    let symbolsExCreateWithBans (length : int, bans : string[]) : Expression[] =
+        let symbols = symbolsCreateWithBans(length, bans)
+        let symbolsEx = Array.create symbols.Length Expression.Zero
+        for i = 0 to (symbols.Length - 1) do
+            symbolsEx.[i] <- symbol symbols.[i]
+        symbolsEx
+
+
+    //if symbolIsSame (symbolsCreate 7000) then 
+    //    System.Console.WriteLine "Aynısından var!!"
+    //else
+    //    System.Console.WriteLine "Hepsi karakteristiktir."
+    let symbolIsSame (stringArray : string) = 
         let mutable result = false
         let strings = stringArray.Split [|','|]
         for i = 0 to strings.Length - 1 do
@@ -59,6 +107,39 @@ module main =
                 if strings.[i] = strings.[j] then 
                     result <- true
         result
+
+    let solve (coefficient : int[], bans : string[]) : int[] = 
+        let Xr = Array.create coefficient.Length 0
+        let Expressions = symbolsExCreateWithBans(coefficient.Length, bans)
+        //for i
+        Xr
+
+    let testing =
+        let fullAngle = 360
+        let slice = 3
+        let alpha = fullAngle / slice
+        let i = Expression.Symbol "i"
+        
+        let adcos1 = cos (0 * alpha * symbol "x")
+        let adsin1 = sin (0 * alpha * symbol "x")
+        let cis1 = adcos1 + adsin1 * i
+
+        let adcos2 = cos (1 * alpha * symbol "x")
+        let adsin2 = sin (1 * alpha * symbol "x")
+        let cis2 = adcos2 + adsin2 * i
+
+        let adcos3 = cos (2 * alpha * symbol "x")
+        let adsin3 = sin (2 * alpha * symbol "x")
+        let cis3 = adcos3 + adsin3 * i
+        //i^2 = -1 dato tokeru kamo
+        //let adcos4 = cos (3 * alpha * symbol "x")
+        //let adsin4 = sin (3 * alpha * symbol "x")
+        //let cis4 = adcos4 + adsin4 * i
+        //let asd = sqrt (Infix.parseOrThrow "-1")
+        
+        //Func<double, double, double> f = (cis1 * cis2 * cis3 * cis4).Compile("x", "i")
+        Trigonometric.contract(cis1 * cis2 * cis3)
+        
         
     let x2 = 0
     //System.Console.WriteLine(Infix.format(Algebraic.expand((x + y) * (x + y))))
